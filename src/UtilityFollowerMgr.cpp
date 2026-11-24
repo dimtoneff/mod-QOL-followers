@@ -621,7 +621,7 @@ bool UtilityFollowerMgr::IsRealPlayer(Player const* player)
     if (!session)
         return false;
 
-    return !session->IsBot();
+    return !session->IsHeadless();
 }
 
 bool UtilityFollowerMgr::IsPlayerBot(Player const* player)
