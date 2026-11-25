@@ -225,8 +225,9 @@ enum FollowerGossipAction : uint32
 };
 
 // Verified WotLK Class Trainer Template IDs - Corrected for accurate classes and non-hostility
-enum AllianceClassTrainerTemplate : uint32
+enum ClassTrainerTemplate : uint32
 {
+    // Alliance
     TRAINER_ALLIANCE_WARRIOR      = 914,   // Ander Germaine (Stormwind - Warrior Trainer)
     TRAINER_ALLIANCE_PALADIN      = 5492,  // Katherine the Pure (Stormwind - Paladin Trainer)
     TRAINER_ALLIANCE_HUNTER       = 5515,  // Einris Brightspear (Stormwind - Hunter Trainer)
@@ -236,11 +237,9 @@ enum AllianceClassTrainerTemplate : uint32
     TRAINER_ALLIANCE_SHAMAN       = 20407, // Farseer Umbrua (Exodar / Stormwind - Shaman Trainer)
     TRAINER_ALLIANCE_MAGE         = 328,   // Zaldimar Wefhellt (Stormwind - Mage Trainer)
     TRAINER_ALLIANCE_WARLOCK      = 5495,  // Ursula Deline (Stormwind - Warlock Trainer)
-    TRAINER_ALLIANCE_DRUID        = 4217   // Mathrengyl Bearwalker (Darnassus - Druid Trainer)
-};
+    TRAINER_ALLIANCE_DRUID        = 4217,  // Mathrengyl Bearwalker (Darnassus - Druid Trainer)
 
-enum HordeClassTrainerTemplate : uint32
-{
+    // Horde
     TRAINER_HORDE_WARRIOR         = 4593,  // Christoph Walker (Undercity - Warrior Trainer)
     TRAINER_HORDE_PALADIN         = 16681, // Champion Bachi (Silvermoon - Paladin Trainer)
     TRAINER_HORDE_HUNTER          = 3406,  // Xor'juul (Orgrimmar - Hunter Trainer)
