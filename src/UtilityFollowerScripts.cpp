@@ -195,6 +195,8 @@ public:
 
             case FollowerType::Auctioneer:
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Open Auction House", SENDER_FOLLOWER_AUCTIONEER, ACTION_AUCTIONEER_OPEN);
+                if (sUtilityFollowerConfig->ShopEnable)
+                    AddGossipItemFor(player, GOSSIP_ICON_VENDOR, "Open Shop", SENDER_FOLLOWER_VENDOR, ACTION_VENDOR_OPEN);
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Dismiss", SENDER_FOLLOWER_MAIN, ACTION_FOLLOWER_DISMISS);
                 break;
 
@@ -314,6 +316,13 @@ public:
                 creature->SetFaction(player->GetFaction());
                 creature->SetNpcFlag(UNIT_NPC_FLAG_AUCTIONEER);
                 player->GetSession()->SendAuctionHello(creature->GetGUID(), creature);
+                return true;
+
+            // Vendor / Shop
+            case ACTION_VENDOR_OPEN:
+                CloseGossipMenuFor(player);
+                creature->SetNpcFlag(UNIT_NPC_FLAG_VENDOR);
+                player->GetSession()->SendListInventory(creature->GetGUID(), sUtilityFollowerConfig->ShopVendorEntry);
                 return true;
 
             // Teleportation Main Menu
