@@ -272,6 +272,30 @@ UtilityFollowers.Spells.RemoveIfBelowLevel = 0
 UtilityFollowers.Spells.PreventActionBarAutoAdd = 1
 
 ###################################################################################################
+# AUCTIONEER FOLLOWER SHOP CONFIGURATION
+###################################################################################################
+#
+#    UtilityFollowers.Shop.Enable
+#        Description: Enable or disable the Auctioneer follower's "Open Shop" gossip option.
+#                     When enabled, talking to the Auctioneer offers a shop selling the items from
+#                     the configured vendor's standard npc_vendor list at their normal gold BuyPrice.
+#        Default:     1 - Enabled
+#                     0 - Disabled
+#
+
+UtilityFollowers.Shop.Enable = 1
+
+#
+#    UtilityFollowers.Shop.VendorEntry
+#        Description: Creature entry whose existing npc_vendor rows supply the shop catalog.
+#                     Prices are the items' normal gold BuyPrice. Any creature entry with
+#                     npc_vendor rows can be used; no SQL is required.
+#        Default:     1285 - Thurman Mullby (Stormwind general goods, 34 items in the base DB)
+#
+
+UtilityFollowers.Shop.VendorEntry = 1285
+
+###################################################################################################
 # TRAINER FOLLOWER SERVICE CONFIGURATION
 ###################################################################################################
 #

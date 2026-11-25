@@ -83,6 +83,10 @@ void UtilityFollowerConfig::Load()
     SpellsRemoveIfBelowLevel = sConfigMgr->GetOption<bool>("UtilityFollowers.Spells.RemoveIfBelowLevel", false);
     PreventActionBarAutoAdd = sConfigMgr->GetOption<bool>("UtilityFollowers.Spells.PreventActionBarAutoAdd", true);
 
+    // Auctioneer Shop
+    ShopEnable = sConfigMgr->GetOption<bool>("UtilityFollowers.Shop.Enable", true);
+    ShopVendorEntry = sConfigMgr->GetOption<uint32>("UtilityFollowers.Shop.VendorEntry", 1285);
+
     // Trainer Services
     TrainerFreeTraining = sConfigMgr->GetOption<bool>("UtilityFollowers.Trainer.FreeTraining", false);
     TrainerIgnoreLevelRequirements = sConfigMgr->GetOption<bool>("UtilityFollowers.Trainer.IgnoreLevelRequirements", false);
@@ -160,6 +164,13 @@ void UtilityFollowerConfig::Load()
     {
         LOG_WARN("module.qol_followers", "Invalid UtilityFollowers.Trainer.Scale ({}), falling back to 1.0", TrainerScale);
         TrainerScale = 1.0f;
+    }
+
+    if (ShopVendorEntry == 0)
+    {
+        LOG_WARN("module.qol_followers", "Invalid UtilityFollowers.Shop.VendorEntry ({}), resetting to 1285",
+            ShopVendorEntry);
+        ShopVendorEntry = 1285;
     }
 
     LOG_INFO("server.loading", "Utility Followers configuration loaded successfully. [Master Enable: {}]", Enable ? "YES" : "NO");

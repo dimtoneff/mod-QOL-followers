@@ -11,8 +11,19 @@ No custom client patch or SQL import is required.
 | Follower | Main services |
 | --- | --- |
 | **Banker** | Opens the player's bank and can be dismissed from gossip. Uses faction-specific Pack Kodo / Pack Mule appearances by default. |
-| **Auctioneer** | Opens the Auction House and inherits the owner's faction so the correct auction house is used. |
+| **Auctioneer** | Opens the Auction House, inherits the owner's faction so the correct auction house is used, and offers an "Open Shop" gossip option backed by a configurable vendor entry. |
 | **Medivh** | Class training, profession trainers, talent reset services, pet talent reset for hunters, dual specialization, and teleportation. |
+
+### Auctioneer shop
+
+The Auctioneer's "Open Shop" gossip option sells items from a standard vendor's `npc_vendor` list at their normal gold prices. The catalog is configurable and requires no SQL:
+
+```ini
+UtilityFollowers.Shop.Enable = 1
+UtilityFollowers.Shop.VendorEntry = 1285
+```
+
+`Enable` toggles the gossip option; `VendorEntry` defaults to `1285` (Thurman Mullby, Stormwind general goods). Any creature entry with `npc_vendor` rows can be used.
 
 ### Medivh teleportation
 
@@ -136,6 +147,7 @@ Notable configuration groups include:
 - world / dungeon / raid / PvP restrictions
 - follower creature entries, display IDs, and scale
 - summon spell IDs and auto-learning
+- auctioneer shop enable switch and vendor entry
 - trainer costs and level restrictions
 - profession-training mode
 - teleport cost, combat restriction, level requirements, and destination menus

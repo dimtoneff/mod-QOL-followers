@@ -74,6 +74,10 @@ public:
     uint8 AuctioneerSpellLearnLevel{10};
     uint32 AuctioneerSpellId{54614}; // Steam-Powered Auctioneer (standard Blizzard WotLK spell)
 
+    // Shop (Auctioneer vendor goods)
+    bool ShopEnable{true};
+    uint32 ShopVendorEntry{1285};
+
     // Trainer / Medivh Spell
     bool TrainerSpellEnable{true};
     bool TrainerSpellAutoLearn{true};

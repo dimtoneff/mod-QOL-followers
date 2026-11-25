@@ -40,7 +40,8 @@ enum FollowerGossipSender : uint32
     SENDER_FOLLOWER_TELEPORT_EXTRA    = 109,
     SENDER_FOLLOWER_TELEPORT_DUNGEONS = 110,
     SENDER_FOLLOWER_TELEPORT_RAIDS    = 111,
-    SENDER_FOLLOWER_TELEPORT_DEST     = 112
+    SENDER_FOLLOWER_TELEPORT_DEST     = 112,
+    SENDER_FOLLOWER_VENDOR            = 113
 };
 
 // Gossip Actions
@@ -217,7 +218,10 @@ enum FollowerGossipAction : uint32
     ACTION_TELEPORT_ULDUAR              = 655,
     ACTION_TELEPORT_TRIAL_OF_CRUSADER   = 656,
     ACTION_TELEPORT_ICECROWN_CITADEL    = 657,
-    ACTION_TELEPORT_RUBY_SANCTUM        = 658
+    ACTION_TELEPORT_RUBY_SANCTUM        = 658,
+
+    // Vendor (Shop)
+    ACTION_VENDOR_OPEN                  = 659
 };
 
 // Verified WotLK Class Trainer Template IDs - Corrected for accurate classes and non-hostility
