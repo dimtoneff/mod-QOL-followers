@@ -256,6 +256,19 @@ UtilityFollowers.Banker.GuildBank.Enable = 1
 
 UtilityFollowers.Banker.GuildBank.VaultEntry = 187293
 
+#
+#    UtilityFollowers.Banker.GuildBank.DisplayId
+#        Description: Display model override (GameObjectDisplayInfo entry) for the temporary vault object.
+#                     Default 1907 is the small WotLK mailbox, replacing the giant "Guild Vault" model 7607.
+#                     A value of 0 falls back to 1907. An invalid non-zero id is rejected at spawn with a
+#                     warning and falls back to the configured vault template's display id. Interaction range
+#                     uses the template model; collision/LOS follows the display override. The object remains
+#                     a type-34 guild vault for guild-bank functionality regardless of appearance.
+#        Default:     1907
+#
+
+UtilityFollowers.Banker.GuildBank.DisplayId = 1907
+
 # Auctioneer Summon Spell
 UtilityFollowers.Auctioneer.Spell.Enable = 1
 UtilityFollowers.Auctioneer.Spell.AutoLearn = 1

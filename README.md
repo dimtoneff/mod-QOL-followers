@@ -32,11 +32,16 @@ The Banker's "Open Guild Bank" gossip option opens the player's guild bank throu
 ```ini
 UtilityFollowers.Banker.GuildBank.Enable = 1
 UtilityFollowers.Banker.GuildBank.VaultEntry = 187293
+UtilityFollowers.Banker.GuildBank.DisplayId = 1907
 ```
 
 `Enable` toggles the gossip option. `VaultEntry` defaults to `187293` and must be a type-34 Guild Vault GameObject
 entry whose `IconName` is not `"Point"` (validated on first use); `0` falls back to `187293`. The player's own guild
-rank and tab permissions still apply.
+rank and tab permissions still apply. `DisplayId` overrides the temporary object's model: the default `1907` is the
+small WotLK mailbox instead of the giant Guild Vault model, and `0` falls back to `1907`. An invalid non-zero id is
+rejected at spawn with a warning and falls back to the configured vault template's display id. Interaction range
+uses the template model; collision/LOS follows the display override. The object stays a type-34 guild vault, so
+bank functionality is unchanged.
 
 ### Medivh teleportation
 
