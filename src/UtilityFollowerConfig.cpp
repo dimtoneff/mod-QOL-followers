@@ -66,6 +66,10 @@ void UtilityFollowerConfig::Load()
     BankerSpellLearnLevel = sConfigMgr->GetOption<uint8>("UtilityFollowers.Banker.Spell.LearnLevel", DefaultSpellLearnLevel);
     BankerSpellId = sConfigMgr->GetOption<uint32>("UtilityFollowers.Banker.Spell.SpellId", 67368);
 
+    // Banker Guild Bank
+    BankerGuildBankEnable = sConfigMgr->GetOption<bool>("UtilityFollowers.Banker.GuildBank.Enable", true);
+    BankerGuildBankVaultEntry = sConfigMgr->GetOption<uint32>("UtilityFollowers.Banker.GuildBank.VaultEntry", 187293);
+
     // Auctioneer Spell
     AuctioneerSpellEnable = sConfigMgr->GetOption<bool>("UtilityFollowers.Auctioneer.Spell.Enable", true);
     AuctioneerSpellAutoLearn = sConfigMgr->GetOption<bool>("UtilityFollowers.Auctioneer.Spell.AutoLearn", true);
@@ -152,6 +156,13 @@ void UtilityFollowerConfig::Load()
     {
         LOG_WARN("module.qol_followers", "Invalid UtilityFollowers.Banker.Scale ({}), falling back to 1.0", BankerScale);
         BankerScale = 1.0f;
+    }
+
+    if (BankerGuildBankVaultEntry == 0)
+    {
+        LOG_WARN("module.qol_followers", "Invalid UtilityFollowers.Banker.GuildBank.VaultEntry ({})"
+            ", resetting to 187293", BankerGuildBankVaultEntry);
+        BankerGuildBankVaultEntry = 187293;
     }
 
     if (AuctioneerScale <= 0.0f)

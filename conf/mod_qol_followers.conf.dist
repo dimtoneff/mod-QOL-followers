@@ -230,6 +230,32 @@ UtilityFollowers.Banker.Spell.AutoLearn = 1
 UtilityFollowers.Banker.Spell.LearnLevel = 10
 UtilityFollowers.Banker.Spell.SpellId = 67368
 
+###################################################################################################
+# BANKER FOLLOWER GUILD BANK CONFIGURATION
+###################################################################################################
+#
+#    UtilityFollowers.Banker.GuildBank.Enable
+#        Description: Enable or disable the Banker follower's "Open Guild Bank" gossip option.
+#                     When enabled, talking to the Banker offers the guild bank alongside the
+#                     regular bank option. The player's own guild rank and tab permissions apply.
+#        Default:     1 - Enabled
+#                     0 - Disabled
+#
+
+UtilityFollowers.Banker.GuildBank.Enable = 1
+
+#
+#    UtilityFollowers.Banker.GuildBank.VaultEntry
+#        Description: Entry of a type-34 Guild Vault GameObject used for the temporary bank.
+#                     Its IconName must not be "Point" (core rejects Point-icon GOs). Type and
+#                     icon are validated on first use, not at config load. A value of 0 is invalid
+#                     and falls back to 187293. The player's own guild rank and tab permissions
+#                     still apply.
+#        Default:     187293
+#
+
+UtilityFollowers.Banker.GuildBank.VaultEntry = 187293
+
 # Auctioneer Summon Spell
 UtilityFollowers.Auctioneer.Spell.Enable = 1
 UtilityFollowers.Auctioneer.Spell.AutoLearn = 1
