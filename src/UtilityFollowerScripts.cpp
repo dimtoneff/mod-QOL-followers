@@ -527,7 +527,8 @@ public:
 
                 if (GameObject* vault = GetOrSpawnVault(player, creature))
                 {
-                    WorldPackets::Guild::GuildBankActivate activate(WorldPacket(CMSG_GUILD_BANKER_ACTIVATE));
+                    WorldPacket activatePacket(CMSG_GUILD_BANKER_ACTIVATE);
+                    WorldPackets::Guild::GuildBankActivate activate(std::move(activatePacket));
                     activate.Banker = vault->GetGUID();
                     activate.FullUpdate = true;
                     player->GetSession()->HandleGuildBankerActivate(activate);
