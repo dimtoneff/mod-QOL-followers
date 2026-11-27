@@ -12,6 +12,7 @@
 #include "Guild.h"
 #include "GuildPackets.h"
 #include "Log.h"
+#include "Map.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
 #include "Pet.h"
@@ -107,17 +108,6 @@ namespace
 
         float x, y, z;
         follower->GetPosition(x, y, z);
-        GameObject* go = player->SummonGameObject(entry, x + 1.0f, y, z, follower->GetOrientation(),
-            0, 0, 0, 0, 300, true, GO_SUMMON_TIMED_DESPAWN);
-        if (!go)
-        {
-            LOG_WARN("module.qol_followers", "Failed to spawn guild bank vault entry {} for player {}.",
-                entry, player->GetName());
-            return nullptr;
-        }
-
-        // Player summons stay spawned by default; otherwise the timer respawns the vault.
-        go->SetSpawnedByDefault(false);
 
         uint32 displayId = sUtilityFollowerConfig->BankerGuildBankDisplayId;
         if (!sGameObjectDisplayInfoStore.LookupEntry(displayId))
@@ -125,7 +115,29 @@ namespace
             LOG_WARN("module.qol_followers", "Invalid guild bank display id {}, using template default", displayId);
             displayId = goTemplate->displayId;
         }
+
+        Map* map = player->GetMap();
+        GameObject* go = new GameObject();
+        if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), entry, map, player->GetPhaseMask(),
+            x + 1.0f, y, z, follower->GetOrientation(), G3D::Quat(), 100, GO_STATE_READY))
+        {
+            delete go;
+            LOG_WARN("module.qol_followers", "Failed to create guild bank vault entry {} for player {}.",
+                entry, player->GetName());
+            return nullptr;
+        }
+
+        go->SetRespawnTime(300);
+        go->SetSpawnedByDefault(false);
+        go->SetSpellId(1);
         go->SetDisplayId(displayId);
+        if (!map->AddToMap(go, true))
+        {
+            delete go;
+            LOG_WARN("module.qol_followers", "Failed to add guild bank vault entry {} to map.", entry);
+            return nullptr;
+        }
+        go->SetDisplayId(displayId); // rebuild server collision/LOS model from the override
 
         std::lock_guard<std::mutex> lock(guildBankVaultsLock);
         guildBankVaults[player->GetGUID().GetCounter()] = go->GetGUID();
