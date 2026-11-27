@@ -7,6 +7,11 @@
 #include "Chat.h"
 #include "CommandScript.h"
 #include "Creature.h"
+#include "GameObject.h"
+#include "Guild.h"
+#include "GuildPackets.h"
+#include "Log.h"
+#include "ObjectMgr.h"
 #include "Opcodes.h"
 #include "Pet.h"
 #include "Player.h"
@@ -26,8 +31,199 @@
 #include "WorldPacket.h"
 #include "WorldScript.h"
 #include "WorldSession.h"
+#include <mutex>
+#include <unordered_map>
 
 using namespace Acore::ChatCommands;
+
+namespace
+{
+    std::mutex guildBankVaultsLock;
+    std::unordered_map<ObjectGuid::LowType, ObjectGuid> guildBankVaults;
+
+    ObjectGuid GetActiveVaultGuid(Player* player)
+    {
+        if (!player || !player->IsInWorld() || !player->GetMap())
+            return ObjectGuid();
+
+        ObjectGuid vaultGuid;
+        {
+            std::lock_guard<std::mutex> lock(guildBankVaultsLock);
+            auto const itr = guildBankVaults.find(player->GetGUID().GetCounter());
+            if (itr == guildBankVaults.end())
+                return ObjectGuid();
+
+            vaultGuid = itr->second;
+        }
+
+        // A GO left on the previous map no longer resolves here; drop the stale tracking entry.
+        if (!player->GetMap()->GetGameObject(vaultGuid))
+        {
+            std::lock_guard<std::mutex> lock(guildBankVaultsLock);
+            guildBankVaults.erase(player->GetGUID().GetCounter());
+            return ObjectGuid();
+        }
+
+        return vaultGuid;
+    }
+
+    void DespawnVault(Player* player)
+    {
+        if (!player || !player->IsInWorld() || !player->GetMap())
+            return;
+
+        ObjectGuid vaultGuid;
+        {
+            std::lock_guard<std::mutex> lock(guildBankVaultsLock);
+            auto const itr = guildBankVaults.find(player->GetGUID().GetCounter());
+            if (itr == guildBankVaults.end())
+                return;
+
+            vaultGuid = itr->second;
+            guildBankVaults.erase(itr);
+        }
+
+        // After a map change the GO is on the old map; its timed despawn cleans it up there.
+        if (GameObject* go = player->GetMap()->GetGameObject(vaultGuid))
+            go->Delete();
+    }
+
+    GameObject* GetOrSpawnVault(Player* player, Creature* follower)
+    {
+        if (!player || !player->IsInWorld() || !player->GetMap() || !follower)
+            return nullptr;
+
+        uint32 entry = sUtilityFollowerConfig->BankerGuildBankVaultEntry;
+        GameObjectTemplate const* goTemplate = sObjectMgr->GetGameObjectTemplate(entry);
+        if (!goTemplate || goTemplate->type != GAMEOBJECT_TYPE_GUILD_BANK || goTemplate->IconName == "Point")
+        {
+            LOG_WARN("module.qol_followers", "Invalid guild bank vault entry {} for follower guild bank.", entry);
+            return nullptr;
+        }
+
+        // Every open gets a fresh vault beside the follower's current position.
+        DespawnVault(player);
+
+        float x, y, z;
+        follower->GetPosition(x, y, z);
+        GameObject* go = player->SummonGameObject(entry, x + 1.0f, y, z, follower->GetOrientation(),
+            0, 0, 0, 0, 300, true, GO_SUMMON_TIMED_DESPAWN);
+        if (!go)
+        {
+            LOG_WARN("module.qol_followers", "Failed to spawn guild bank vault entry {} for player {}.",
+                entry, player->GetName());
+            return nullptr;
+        }
+
+        // Player summons stay spawned by default; otherwise the timer respawns the vault.
+        go->SetSpawnedByDefault(false);
+
+        std::lock_guard<std::mutex> lock(guildBankVaultsLock);
+        guildBankVaults[player->GetGUID().GetCounter()] = go->GetGUID();
+        return go;
+    }
+
+    bool RewriteGuildBankPacket(WorldSession* session, WorldPacket const& packet)
+    {
+        switch (packet.GetOpcode())
+        {
+            case CMSG_GUILD_BANKER_ACTIVATE:
+            case CMSG_GUILD_BANK_QUERY_TAB:
+            case CMSG_GUILD_BANK_DEPOSIT_MONEY:
+            case CMSG_GUILD_BANK_WITHDRAW_MONEY:
+            case CMSG_GUILD_BANK_SWAP_ITEMS:
+            case CMSG_GUILD_BANK_BUY_TAB:
+            case CMSG_GUILD_BANK_UPDATE_TAB:
+                break;
+            default:
+                return true;
+        }
+
+        if (!sUtilityFollowerConfig->Enable || !sUtilityFollowerConfig->BankerGuildBankEnable || !session)
+            return true;
+
+        Player* player = session->GetPlayer();
+        if (!player || !player->IsInWorld() || !player->GetMap() || packet.size() < 8)
+            return true;
+
+        ObjectGuid vaultGuid = GetActiveVaultGuid(player);
+        if (vaultGuid.IsEmpty())
+            return true;
+
+        WorldPacket peek = packet;
+        uint64 rawBanker = 0;
+        peek >> rawBanker;
+        if (rawBanker == vaultGuid.GetRawValue())
+            return true;
+
+        ObjectGuid incomingGuid;
+        incomingGuid.Set(rawBanker);
+        if (player->GetGameObjectIfCanInteractWith(incomingGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+            return true;
+
+        if (!player->GetGameObjectIfCanInteractWith(vaultGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+            return true;
+
+        WorldPacket copy = packet;
+        copy.put<uint64>(0, vaultGuid.GetRawValue());
+        copy.rpos(0);
+
+        switch (packet.GetOpcode())
+        {
+            case CMSG_GUILD_BANKER_ACTIVATE:
+            {
+                WorldPackets::Guild::GuildBankActivate activate(std::move(copy));
+                activate.Read();
+                session->HandleGuildBankerActivate(activate);
+                return false;
+            }
+            case CMSG_GUILD_BANK_QUERY_TAB:
+            {
+                WorldPackets::Guild::GuildBankQueryTab queryTab(std::move(copy));
+                queryTab.Read();
+                session->HandleGuildBankQueryTab(queryTab);
+                return false;
+            }
+            case CMSG_GUILD_BANK_DEPOSIT_MONEY:
+            {
+                WorldPackets::Guild::GuildBankDepositMoney depositMoney(std::move(copy));
+                depositMoney.Read();
+                session->HandleGuildBankDepositMoney(depositMoney);
+                return false;
+            }
+            case CMSG_GUILD_BANK_WITHDRAW_MONEY:
+            {
+                WorldPackets::Guild::GuildBankWithdrawMoney withdrawMoney(std::move(copy));
+                withdrawMoney.Read();
+                session->HandleGuildBankWithdrawMoney(withdrawMoney);
+                return false;
+            }
+            case CMSG_GUILD_BANK_SWAP_ITEMS:
+            {
+                WorldPackets::Guild::GuildBankSwapItems swapItems(std::move(copy));
+                swapItems.Read();
+                session->HandleGuildBankSwapItems(swapItems);
+                return false;
+            }
+            case CMSG_GUILD_BANK_BUY_TAB:
+            {
+                WorldPackets::Guild::GuildBankBuyTab buyTab(std::move(copy));
+                buyTab.Read();
+                session->HandleGuildBankBuyTab(buyTab);
+                return false;
+            }
+            case CMSG_GUILD_BANK_UPDATE_TAB:
+            {
+                WorldPackets::Guild::GuildBankUpdateTab updateTab(std::move(copy));
+                updateTab.Read();
+                session->HandleGuildBankUpdateTab(updateTab);
+                return false;
+            }
+            default:
+                return true;
+        }
+    }
+}
 
 // ============================================================================
 // Comprehensive Teleport Destinations (Major Cities, All Vanilla/TBC/WotLK Dungeons & Raids)
@@ -190,6 +386,10 @@ public:
         {
             case FollowerType::Banker:
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Open Bank", SENDER_FOLLOWER_BANKER, ACTION_BANKER_OPEN);
+                if (sUtilityFollowerConfig->BankerGuildBankEnable && player->GetGuild())
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "Open Guild Bank",
+                        SENDER_FOLLOWER_GUILDBANK, ACTION_BANKER_GUILD_BANK_OPEN);
+
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Dismiss", SENDER_FOLLOWER_MAIN, ACTION_FOLLOWER_DISMISS);
                 break;
 
@@ -296,6 +496,7 @@ public:
             {
                 FollowerType type = sUtilityFollowerMgr->GetFollowerType(creature->GetGUID());
                 CloseGossipMenuFor(player);
+                DespawnVault(player);
                 sUtilityFollowerMgr->DespawnFollower(player, type);
                 return true;
             }
@@ -308,6 +509,32 @@ public:
                 CloseGossipMenuFor(player);
                 creature->SetNpcFlag(UNIT_NPC_FLAG_BANKER);
                 player->GetSession()->SendShowBank(creature->GetGUID());
+                return true;
+
+            case ACTION_BANKER_GUILD_BANK_OPEN:
+                CloseGossipMenuFor(player);
+                if (!sUtilityFollowerConfig->BankerGuildBankEnable)
+                {
+                    ChatHandler(player->GetSession()).SendSysMessage("Guild bank is currently disabled.");
+                    return true;
+                }
+
+                if (!player->GetGuild())
+                {
+                    ChatHandler(player->GetSession()).SendSysMessage("You must be in a guild to use the guild bank.");
+                    return true;
+                }
+
+                if (GameObject* vault = GetOrSpawnVault(player, creature))
+                {
+                    WorldPackets::Guild::GuildBankActivate activate(WorldPacket(CMSG_GUILD_BANKER_ACTIVATE));
+                    activate.Banker = vault->GetGUID();
+                    activate.FullUpdate = true;
+                    player->GetSession()->HandleGuildBankerActivate(activate);
+                }
+                else
+                    ChatHandler(player->GetSession()).SendSysMessage("Unable to open the guild bank.");
+
                 return true;
 
             // Auctioneer
@@ -854,6 +1081,7 @@ public:
 
     void OnPlayerLogout(Player* player) override
     {
+        DespawnVault(player);
         sUtilityFollowerMgr->DespawnAllFollowers(player);
     }
 
@@ -926,6 +1154,7 @@ public:
         if (!player || !UtilityFollowerMgr::IsRealPlayer(player))
             return false;
 
+        DespawnVault(player);
         sUtilityFollowerMgr->DespawnAllFollowers(player);
         handler->SendSysMessage("All utility followers dismissed.");
         return true;
@@ -952,6 +1181,9 @@ public:
 
     bool CanPacketReceive(WorldSession* session, WorldPacket const& packet) override
     {
+        if (!RewriteGuildBankPacket(session, packet))
+            return false;
+
         if (!sUtilityFollowerConfig->Enable || !sUtilityFollowerConfig->PreventActionBarAutoAdd || !session)
             return true;
 

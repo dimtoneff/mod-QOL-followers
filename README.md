@@ -10,7 +10,7 @@ No custom client patch or SQL import is required.
 
 | Follower | Main services |
 | --- | --- |
-| **Banker** | Opens the player's bank and can be dismissed from gossip. Uses faction-specific Pack Kodo / Pack Mule appearances by default. |
+| **Banker** | Bank, guild bank, and dismiss gossip options. Uses Pack Kodo / Pack Mule appearances by default. |
 | **Auctioneer** | Opens the Auction House, inherits the owner's faction so the correct auction house is used, and offers an "Open Shop" gossip option backed by a configurable vendor entry. |
 | **Medivh** | Class training, profession trainers, talent reset services, pet talent reset for hunters, dual specialization, and teleportation. |
 
@@ -24,6 +24,19 @@ UtilityFollowers.Shop.VendorEntry = 1285
 ```
 
 `Enable` toggles the gossip option; `VendorEntry` defaults to `1285` (Thurman Mullby, Stormwind general goods). Any creature entry with `npc_vendor` rows can be used.
+
+### Banker guild bank
+
+The Banker's "Open Guild Bank" gossip option opens the player's guild bank through a temporary guild vault GameObject:
+
+```ini
+UtilityFollowers.Banker.GuildBank.Enable = 1
+UtilityFollowers.Banker.GuildBank.VaultEntry = 187293
+```
+
+`Enable` toggles the gossip option. `VaultEntry` defaults to `187293` and must be a type-34 Guild Vault GameObject
+entry whose `IconName` is not `"Point"` (validated on first use); `0` falls back to `187293`. The player's own guild
+rank and tab permissions still apply.
 
 ### Medivh teleportation
 
@@ -148,6 +161,7 @@ Notable configuration groups include:
 - follower creature entries, display IDs, and scale
 - summon spell IDs and auto-learning
 - auctioneer shop enable switch and vendor entry
+- banker guild bank enable switch and vault GameObject entry
 - trainer costs and level restrictions
 - profession-training mode
 - teleport cost, combat restriction, level requirements, and destination menus

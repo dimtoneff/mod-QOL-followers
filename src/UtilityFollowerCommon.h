@@ -41,7 +41,8 @@ enum FollowerGossipSender : uint32
     SENDER_FOLLOWER_TELEPORT_DUNGEONS = 110,
     SENDER_FOLLOWER_TELEPORT_RAIDS    = 111,
     SENDER_FOLLOWER_TELEPORT_DEST     = 112,
-    SENDER_FOLLOWER_VENDOR            = 113
+    SENDER_FOLLOWER_VENDOR            = 113,
+    SENDER_FOLLOWER_GUILDBANK         = 114
 };
 
 // Gossip Actions
@@ -221,7 +222,10 @@ enum FollowerGossipAction : uint32
     ACTION_TELEPORT_RUBY_SANCTUM        = 658,
 
     // Vendor (Shop)
-    ACTION_VENDOR_OPEN                  = 659
+    ACTION_VENDOR_OPEN                  = 659,
+
+    // Banker (Guild Bank)
+    ACTION_BANKER_GUILD_BANK_OPEN       = 660
 };
 
 // Verified WotLK Class Trainer Template IDs - Corrected for accurate classes and non-hostility

@@ -68,6 +68,10 @@ public:
     uint8 BankerSpellLearnLevel{10};
     uint32 BankerSpellId{67368}; // Bank Errand (standard Blizzard WotLK spell)
 
+    // Banker Guild Bank
+    bool BankerGuildBankEnable{true};
+    uint32 BankerGuildBankVaultEntry{187293};
+
     // Auctioneer Spell
     bool AuctioneerSpellEnable{true};
     bool AuctioneerSpellAutoLearn{true};
