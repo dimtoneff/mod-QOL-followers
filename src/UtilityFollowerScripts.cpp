@@ -7,6 +7,7 @@
 #include "Chat.h"
 #include "CommandScript.h"
 #include "Creature.h"
+#include "DBCStores.h"
 #include "GameObject.h"
 #include "Guild.h"
 #include "GuildPackets.h"
@@ -117,6 +118,14 @@ namespace
 
         // Player summons stay spawned by default; otherwise the timer respawns the vault.
         go->SetSpawnedByDefault(false);
+
+        uint32 displayId = sUtilityFollowerConfig->BankerGuildBankDisplayId;
+        if (!sGameObjectDisplayInfoStore.LookupEntry(displayId))
+        {
+            LOG_WARN("module.qol_followers", "Invalid guild bank display id {}, using template default", displayId);
+            displayId = goTemplate->displayId;
+        }
+        go->SetDisplayId(displayId);
 
         std::lock_guard<std::mutex> lock(guildBankVaultsLock);
         guildBankVaults[player->GetGUID().GetCounter()] = go->GetGUID();
