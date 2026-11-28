@@ -71,7 +71,7 @@ public:
     // Banker Guild Bank
     bool BankerGuildBankEnable{true};
     uint32 BankerGuildBankVaultEntry{187293};
-    uint32 BankerGuildBankDisplayId{1907}; // Small WotLK mailbox; visual override only
+    uint32 BankerGuildBankDisplayId{3014}; // Compact Dark Iron Safe; visual override only
 
     // Auctioneer Spell
     bool AuctioneerSpellEnable{true};

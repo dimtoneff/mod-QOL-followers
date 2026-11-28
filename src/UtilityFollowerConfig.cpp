@@ -69,7 +69,7 @@ void UtilityFollowerConfig::Load()
     // Banker Guild Bank
     BankerGuildBankEnable = sConfigMgr->GetOption<bool>("UtilityFollowers.Banker.GuildBank.Enable", true);
     BankerGuildBankVaultEntry = sConfigMgr->GetOption<uint32>("UtilityFollowers.Banker.GuildBank.VaultEntry", 187293);
-    BankerGuildBankDisplayId = sConfigMgr->GetOption<uint32>("UtilityFollowers.Banker.GuildBank.DisplayId", 1907);
+    BankerGuildBankDisplayId = sConfigMgr->GetOption<uint32>("UtilityFollowers.Banker.GuildBank.DisplayId", 3014);
 
     // Auctioneer Spell
     AuctioneerSpellEnable = sConfigMgr->GetOption<bool>("UtilityFollowers.Auctioneer.Spell.Enable", true);
@@ -169,8 +169,8 @@ void UtilityFollowerConfig::Load()
     if (BankerGuildBankDisplayId == 0)
     {
         LOG_WARN("module.qol_followers", "Invalid UtilityFollowers.Banker.GuildBank.DisplayId ({})"
-            ", resetting to 1907", BankerGuildBankDisplayId);
-        BankerGuildBankDisplayId = 1907;
+            ", resetting to 3014", BankerGuildBankDisplayId);
+        BankerGuildBankDisplayId = 3014;
     }
 
     if (AuctioneerScale <= 0.0f)
